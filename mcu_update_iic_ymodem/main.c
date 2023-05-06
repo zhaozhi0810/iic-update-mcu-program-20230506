@@ -13,7 +13,7 @@
 *	Copyright (C), 2022-2030, htjc by dazhi
 *
 *
-*    aarch64-linux-gnu-gcc *.c -o xyzmodem_send_dg_lcd
+*    aarch64-linux-gnu-gcc *.c -o xyzmodem_send_dg_keyboard
 *********************************************************************************************************
 */
 #include <stdio.h>
@@ -73,6 +73,14 @@ int  send_update_cmd_tomcu(uint8_t*data,uint8_t phase)
 				sleep(1);
 			}
 
+			ret = UART_ReceivePacket (data, 35, 1000);   //一次性读是正常的。
+			if(ret == 0)
+			{
+				i = 1;
+				return 0;
+			}
+
+#if 0
 			ret = UART_ReceiveByte (data+i, 100);
 			if(ret == 0)
 			{
@@ -99,7 +107,7 @@ int  send_update_cmd_tomcu(uint8_t*data,uint8_t phase)
 				}
 			}
 			//printf("i=%d\n",i);		
-			
+#endif			
 		}
 		while(1);
 	}

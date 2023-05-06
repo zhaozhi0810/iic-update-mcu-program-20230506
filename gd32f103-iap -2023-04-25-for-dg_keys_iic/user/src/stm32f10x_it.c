@@ -199,7 +199,7 @@ void I2C0_EV_IRQHandler(void)
 //		else 
 		i++;
 		tdata_count = CIRC_RM_CNT(g_i2c0_txbuf);
-		if( tdata_count > 0 && (i%2))   //发送缓存有数据
+		if( tdata_count > 0)   //发送缓存有数据 && (i%2)
 		{
 		//	g_iic0_is_Idle = 0;
 			CIRC_GET_CH(g_i2c0_txbuf, tdata);   //取出数据，

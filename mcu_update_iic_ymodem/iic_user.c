@@ -2,7 +2,7 @@
 * @Author: dazhi
 * @Date:   2023-05-05 16:22:34
 * @Last Modified by:   dazhi
-* @Last Modified time: 2023-05-06 16:09:22
+* @Last Modified time: 2023-05-06 17:02:05
 */
 
  
@@ -82,7 +82,7 @@ static int i2c_write(u8 slave_addr, uint8_t data[],uint16_t len) {
  
 // Read the given I2C slave device's register and return the read value in `*result`:
 // 每次只能读一个字节上来
-static int i2c_read(u8 slave_addr, uint8_t data[]) {
+static int i2c_read(u8 slave_addr, uint8_t data[],uint8_t len) {
     int retval;
 //    u8 outbuf[1], inbuf[1];
     struct i2c_msg msgs[1];//这个地方要封两个包。因为要先写入需要读的地址，然后才是读操作
@@ -98,7 +98,7 @@ static int i2c_read(u8 slave_addr, uint8_t data[]) {
 
     msgs[0].addr = slave_addr;
     msgs[0].flags = I2C_M_RD;//表示读
-    msgs[0].len = 1;
+    msgs[0].len = len;
     msgs[0].buf = data;
  
     // msgs[1].addr = slave_addr;
@@ -130,7 +130,7 @@ int IIC3_0x40_ReceiveByte (uint8_t *c, uint32_t timeout)
     int ret;
     do
     {
-        ret = i2c_read(MCU_IIC_SLAVER_ADDR, c); 
+        ret = i2c_read(MCU_IIC_SLAVER_ADDR, c, 1); 
         if(ret == 0)
         {
         //    printf("IIC3_0x40_ReceiveByte c = %#x\n",*c);
@@ -155,12 +155,13 @@ int IIC3_0x40_ReceivePacket (uint8_t *data, uint16_t length, uint32_t timeout)
     int i = 0;
     do
     {
-        ret = i2c_read(MCU_IIC_SLAVER_ADDR, data+i); 
+        ret = i2c_read(MCU_IIC_SLAVER_ADDR, data,length); 
+    //    ret = i2c_read(MCU_IIC_SLAVER_ADDR, data+i); 
         if(ret == 0)
         {
          //   printf("IIC3_0x40_ReceivePacket data = %#x,i=%d,len = %d\n",data[i],i,length);
-            i++;
-            if(i >= length)
+            // i++;
+            // if(i >= length)
                 return 0;
         }
         else
