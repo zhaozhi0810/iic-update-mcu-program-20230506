@@ -37,7 +37,7 @@
 #define CMD_LIGHT_LED       0x60
 #define CMD_LIGHT_OUT       0x70
 #define CMD_LIGHT_FLASH     0x80   //注意与jc_keyboard对应
-#define CMD_UPDATE_MCU      0x90   //单片机通过3399的iic升级，2023-05-05
+#define CMD_UPDATE_MCU      0xd0   //单片机通过3399的iic升级，2023-05-05
 
 
 typedef struct _IIC_circ_buf
@@ -70,7 +70,7 @@ extern TaskHandle_t  TaskHandle_IIC0_SendData;  //iic0发送数据
 
 extern IIC_CircleBuffer g_i2c0_rxbuf;
 extern IIC_CircleBuffer g_i2c0_txbuf;
-extern uint8_t g_IIC_tx_buf[7];
+extern uint8_t g_IIC_tx_buf[36];
 //iic0是否空闲
 extern volatile uint8_t g_iic0_is_Idle;  //0表示非空闲，1表示空闲
 

@@ -544,9 +544,9 @@ void get_cmd_from_rk3399_iic0(void)
 				//	set_download_uart(1); //通讯串口
 					if((buf[3] == 0) && (buf[4] == 0xcf))  //是升级命令
 					{
-						checksum = (uint8_t)(0x5a+0xa5);
-						Send_Byte_to_iic0(0x5a);					
-						Send_Byte_to_iic0(0xa5);						
+						checksum = (uint8_t)(0x55+0xaa);
+						Send_Byte_to_iic0(0x55);					
+						Send_Byte_to_iic0(0xaa);						
 						//1. 上传md5码
 						for (i = 0; (i < FILE_MD5_LENGTH);i++)
 						{

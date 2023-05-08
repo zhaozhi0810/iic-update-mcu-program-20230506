@@ -39,8 +39,8 @@ typedef  void (*pFunction)(void);
 /* Constants used by Serial Command Line Mode */
 #define CMD_STRING_SIZE       128
 
-#define ApplicationAddress    0x8006000
-#define ApplicationDownAddress    (0x8000000 +  FLASH_SIZE)
+#define ApplicationAddress    0x8005c00   //对于导光按键的单片机的升级，使用不同的地址，用于区分bin文件！！！ 2023-05-08
+#define ApplicationDownAddress    (0x8000000 +  FLASH_SIZE)  //下载的地址还是不用改变
 
 
 
@@ -62,7 +62,7 @@ typedef  void (*pFunction)(void);
 #endif
 
 /* Compute the FLASH upload image size */  
-#define FLASH_IMAGE_SIZE                   (uint32_t) (FLASH_SIZE - (ApplicationAddress - 0x08000000))  //52K
+#define FLASH_IMAGE_SIZE        (uint32_t) (FLASH_SIZE - (ApplicationAddress - 0x08000000))  //52K
 
 /* Exported macro ------------------------------------------------------------*/
 /* Common routines */

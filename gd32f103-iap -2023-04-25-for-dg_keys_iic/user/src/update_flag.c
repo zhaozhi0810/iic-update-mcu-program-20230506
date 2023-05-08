@@ -133,8 +133,8 @@ uint8_t is_update_from_debug_uart(void)
 //flash 拷贝
 uint8_t flash_download_copyto_app(void)
 {
-	uint16_t i,j;
-	uint8_t count = 0;
+//	uint16_t i,j;
+//	uint8_t count = 0;
 	uint8_t *download_addr = (void*) ApplicationDownAddress;   //flash的大小，实际是76k(0x8013000)的位置，download的起始地址
 	uint32_t app_addr = ApplicationAddress; //app的起始地址 
 	uint32_t size,size_read = 0;
@@ -146,7 +146,7 @@ uint8_t flash_download_copyto_app(void)
 		mcu_update_done();   //更新标志，不再升级
 		return 2;   //不能升级，rom不对
 	}
-	else if(((*(__IO uint32_t*)(download_addr+4)) & 0xfFFff000 ) != ApplicationAddress)
+	else if(((*(__IO uint32_t*)(download_addr+4)) & 0xfFFffc00 ) != ApplicationAddress)
 	{
 		printf("not update 3\r\n");
 		mcu_update_done();   //更新标志，不再升级
@@ -161,37 +161,47 @@ uint8_t flash_download_copyto_app(void)
 	}
 	printf("flash_download_copyto_app size = %#x // %d\r\n",size,size);
 	
+	
+	fmc_page_erase(app_addr);
+	
 	while(size_read< size)
-	{
-		for(i=0;(i<1024);i++,size_read++)  //从download区读取出来
-		{
-			tab_1024[i] = download_addr[size_read];
-			if(tab_1024[i] == 0xff)  //连续出现10次0xff，拷贝结束
-			{
-				count++;
-				if(count >= 16)
-					break;
-			}
-			else
-			{
-				count = 0;
-			}			
-		}
-
-		//写入到app区
-		fmc_page_erase(app_addr);
+	{		
+		fmc_word_program(app_addr, *(uint32_t*)(download_addr+size_read));
+		app_addr += 4;   //app_addr 一直再更新
+		size_read += 4;
 		
-		//不一定是写入1024个字节		
-		for(j=0;j<i;j+=4)
-		{
-			fmc_word_program(app_addr, *(uint32_t*)(tab_1024+j));
-			app_addr += 4;   //app_addr 一直再更新
-		}
+		if(app_addr%PAGE_SIZE == 0)
+			fmc_page_erase(app_addr);
+		
+//		for(i=0;(i<1024);i++,size_read++)  //从download区读取出来
+//		{
+//			//tab_1024[i] = download_addr[size_read];
+//			if(download_addr[size_read] == 0xff)  //连续出现10次0xff，拷贝结束
+//			{
+//				count++;
+//				if(count >= 16)
+//					break;
+//			}
+//			else
+//			{
+//				count = 0;
+//			}			
+//		}
 
-		if(count >= 16)  //完成
-		{
-			break;
-		}
+//		//写入到app区
+//		fmc_page_erase(app_addr);
+//		
+//		//不一定是写入1024个字节		
+//		for(j=0;j<i;j+=4)
+//		{
+//			fmc_word_program(app_addr, *(uint32_t*)(tab_1024+j));
+//			app_addr += 4;   //app_addr 一直再更新
+//		}
+
+//		if(count >= 16)  //完成
+//		{
+//			break;
+//		}
 	}
 	
 	//设置更新成功的标志，修改app md5值。

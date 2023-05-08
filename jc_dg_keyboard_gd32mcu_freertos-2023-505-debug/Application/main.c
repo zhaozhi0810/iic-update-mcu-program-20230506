@@ -28,8 +28,8 @@ TaskHandle_t  TaskHandle_IIC0_SendData;  //iic0发送数据
 uint8_t g_key_scan_set_num = 0;/*扫描按键数*/
 uint8_t g_card_device_type = 0xff;/*按键类型*/
 uint8_t g_LED_set_max_num = 0;/*按键灯指令设置最大值*/
-uint8_t g_IIC_tx_data[7] = {0x55, 0xaa};  /*I2C发送缓存*/
-uint8_t g_IIC_tx_buf[7] = {0x55, 0xaa};   /*I2C发送缓存*/
+//uint8_t g_IIC_tx_data[7] = {0x55, 0xaa};  /*I2C发送缓存*/
+uint8_t g_IIC_tx_buf[36] = {0x55, 0xaa};   /*I2C发送缓存*/
 
 IIC_CircleBuffer g_i2c0_rxbuf;/*I2C接收缓冲区*/
 IIC_CircleBuffer g_i2c0_txbuf;/*I2C发送缓冲区*/
@@ -42,7 +42,7 @@ uint8_t g_GPIO_LED_map_value[48];/*LED灯映射*/
 uint8_t g_save_presskey1 = 0;
 uint8_t g_save_releasekey1 = 0;
 
-
+extern volatile uint8_t g_iic0_send_size;  //默认是发送7个字节
 //uint8_t g_pwm_value = 0;/*PWM亮度,0-250*/
 //uint8_t g_press_down_multi_num[10];/*多按键*/
 
@@ -510,9 +510,9 @@ read_again:
 /*寄存器复位函数*/
 static void reset_handle(void)
 {
-    memset(g_IIC_tx_data, 0, sizeof(g_IIC_tx_data));
-    g_IIC_tx_data[0] = 0x55;
-    g_IIC_tx_data[1] = 0xaa;
+//    memset(g_IIC_tx_data, 0, sizeof(g_IIC_tx_data));
+//    g_IIC_tx_data[0] = 0x55;
+//    g_IIC_tx_data[1] = 0xaa;
     AT9236_transmit_byte(0x4f, 0x00);  // reset
     AT9236_transmit_byte(0x00, 0x01);  // set shutdown register(0x00: software shutdown mode; 0x01: normal operation)
     AT9236_transmit_byte(0x4A, 0x00);  // set all channels enable
@@ -750,12 +750,19 @@ void task2_func(void *pdata)
 }
 
 
+//ota-uart.c
+void goto_ota_update(void);
+
+
+
 /*任务3 接收主机指令并响应*/
 void task3_func(void *pdata)
 {
     uint8_t rx_data[7] = {0};
     uint8_t cmd_type, cmd;
 	uint8_t flash_time;
+	uint8_t i,checksum = 0;
+	uint8_t *pdown_md5 = (void*)(UPDATE_FLAG_START_ADDR + DOWN_MD5_OFFET);
 	uint32_t task_notity_val;
     printf("task3 comunicate cpu iic start\r\n");
 	
@@ -820,16 +827,24 @@ void task3_func(void *pdata)
                 fill_tx_data(0x70, 0x00, 0x00, 0x5a);
                 break;
 			case CMD_UPDATE_MCU:   //单片机升级
-				if(cmd == 0)  //上报md5，共32个字节
+				if(cmd == 0)  //上报md5，共35个字节
 				{
-				
+					checksum = (uint8_t)(0x55+0xaa);
+					for(i=0;i<32;i++)
+					{
+						g_IIC_tx_buf[i+2] = pdown_md5[i];
+						checksum += pdown_md5[i];				
+					}
+					g_IIC_tx_buf[i+2] = checksum;   //写入缓存
+					g_iic0_send_size = 35;
+					//发送，产生中断
+//					gpio_bit_reset(GPIOA, GPIO_PIN_2); //high->low
+//					gpio_bit_set(GPIOA, GPIO_PIN_2); //low->high
 				}
 				else if(cmd == 1) //准备升级，直接设置后重启
 				{
-				
-				}
-			
-			
+					goto_ota_update();
+				}			
 				break;
             default:
 				if((cmd_type & 0xfc) == CMD_LIGHT_FLASH)  //处理0x80,0x81,0x82,0x83
@@ -1050,7 +1065,7 @@ void feed_wtg_task(void* data)
 */
 int main(void)
 {
-	nvic_vector_table_set(NVIC_VECTTAB_FLASH, 0x6000);   //注意变化！！！2023-05-06
+	nvic_vector_table_set(NVIC_VECTTAB_FLASH, 0x5c00);   //注意变化！！！2023-05-06
 	
 //	StaticSemaphore_t  pxMutexBuffer;  
     bsp_sys_init();

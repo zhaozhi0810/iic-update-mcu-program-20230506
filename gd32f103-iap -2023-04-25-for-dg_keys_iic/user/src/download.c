@@ -30,7 +30,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 extern uint8_t file_name[FILE_NAME_LENGTH];
-uint8_t tab_1024[1024] ={0};
+//uint8_t tab_1024[1024] ={0};
 uint8_t md5sum_down[34] ={0};  //存放md5值
 int32_t Size = 0;   //存放固件大小，下载的值
 /* Private function prototypes -----------------------------------------------*/
@@ -48,7 +48,7 @@ uint8_t SerialDownload(void)
 	char str[20];
 
 	SerialPutString("Waiting for the file to be sent ... (press 'a' to abort)\n\r");
-	Size = Ymodem_Receive(&tab_1024[0]);
+	Size = Ymodem_Receive();//&tab_1024[0]
 	sprintf( str , "\r\nsize=%d\r\n" , Size );
 	SerialPutString( str );
 	if (Size > 0)

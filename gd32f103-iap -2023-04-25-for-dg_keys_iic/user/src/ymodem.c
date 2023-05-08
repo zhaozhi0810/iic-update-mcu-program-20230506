@@ -34,8 +34,7 @@
 uint8_t file_name[FILE_NAME_LENGTH];
 uint32_t FlashDestination = ApplicationAddress; /* Flash user program offset */
 uint16_t PageSize = PAGE_SIZE;
-uint32_t EraseCounter = 0x0;
-uint32_t NbrOfPage = 0;
+
 fmc_state_enum FLASHStatus = FMC_READY;
 uint32_t RamSource;
 extern uint8_t tab_1024[1024];
@@ -311,7 +310,7 @@ uint16_t Cal_CRC16(const uint8_t* data, uint32_t size)
 static int32_t Receive_Packet (uint8_t *data, int32_t *length, uint32_t timeout)
 {
 	uint16_t i, packet_size;
-	uint8_t c,checksum;
+	uint8_t c;//checksum;
 	*length = 0;
 	uint16_t tempCRC,tempCRC1;
 	if (Receive_Byte(&c, timeout) != 0)
@@ -348,7 +347,7 @@ static int32_t Receive_Packet (uint8_t *data, int32_t *length, uint32_t timeout)
 			return -1;
 	}
 	*data = c;
-	checksum = c;
+//	checksum = c;
 	for (i = 1; i < (packet_size + PACKET_OVERHEAD); i ++)
 	{
 	//	printf("for %d\r\n",packet_size + PACKET_OVERHEAD);
@@ -381,6 +380,36 @@ static int32_t Receive_Packet (uint8_t *data, int32_t *length, uint32_t timeout)
 }
 
 
+//把擦除分成两个阶段，1，发送擦除命令
+//static void my_fmc_erase_page_phase1(uint32_t page_address)
+//{
+//	fmc_state_enum fmc_state;
+//	
+//	printf("my_fmc_erase_page_phase1 = %#x\r\n",page_address);
+//	
+//	fmc_state = fmc_bank0_ready_wait(FMC_TIMEOUT_COUNT);
+//            /* if the last operation is completed, start page erase */
+//	if(FMC_READY == fmc_state){
+//		FMC_CTL0 |= FMC_CTL0_PER;
+//		FMC_ADDR0 = page_address;
+//		FMC_CTL0 |= FMC_CTL0_START;
+//		/* wait for the FMC ready */
+//	}
+//}
+
+////把擦除分成两个阶段，1，等待擦除结束
+//static fmc_state_enum my_fmc_erase_page_phase2(void)
+//{
+//	fmc_state_enum fmc_state;
+//	/* wait for the FMC ready */
+//	fmc_state = fmc_bank0_ready_wait(FMC_TIMEOUT_COUNT);
+//	/* reset the PER bit */
+//	FMC_CTL0 &= ~FMC_CTL0_PER;
+//	
+//	return fmc_state;
+
+//}
+
 
 
 
@@ -389,7 +418,7 @@ static int32_t Receive_Packet (uint8_t *data, int32_t *length, uint32_t timeout)
   * @param  buf: Address of the first byte
   * @retval The size of the file
   */
-int32_t Ymodem_Receive (uint8_t *buf)
+int32_t Ymodem_Receive (void)  //uint8_t *buf
 {
 	uint8_t packet_data[PACKET_1K_SIZE + PACKET_OVERHEAD], file_size[FILE_SIZE_LENGTH], *file_ptr, *buf_ptr;
 	int32_t i, j, packet_length, session_done, file_done, packets_received, errors, session_begin, size = 0;
@@ -398,6 +427,8 @@ int32_t Ymodem_Receive (uint8_t *buf)
 	uint8_t md5_same = 0;  //md5相同为0，否则为1
 	uint32_t FlashDestination_const;	
 	uint8_t time_out = 0;   //做一个计时，如果计数120次（大概两分钟？），就退出下载模式
+	uint8_t EraseCounter = 0x0;
+	uint8_t NbrOfPage = 0;
 	/* Initialize FlashDestination variable */
 	if(is_cpu_update_cmd) //rk3399下载的位置不同，是down分区
 	{
@@ -409,10 +440,10 @@ int32_t Ymodem_Receive (uint8_t *buf)
 	}
 	FlashDestination_const = FlashDestination;
 	//printf("FlashDestination = %#x\r\n",FlashDestination);
-	
+	buf_ptr = packet_data + PACKET_HEADER;
 	for (session_done = 0, errors = 0, session_begin = 0; ;)
 	{
-		for (packets_received = 0, file_done = 0, buf_ptr = buf; ;)
+		for (packets_received = 0, file_done = 0; ;) //, buf_ptr = buf
 		{
 			switch (Receive_Packet(packet_data, &packet_length, NAK_TIMEOUT))
 			{
@@ -433,11 +464,12 @@ int32_t Ymodem_Receive (uint8_t *buf)
 						default:
 							if((packet_data[PACKET_SEQNO_INDEX]) < packets_received)  //丢掉重复的包，ymodem可能会发送多次
 							{
+								printf("---packet_data[PACKET_SEQNO_INDEX] = %#x packets_received = %d\r\n",packet_data[PACKET_SEQNO_INDEX],packets_received);
 							//	packets_received--;
 								continue;
 							}
 							//packets_received = packet_data[PACKET_SEQNO_INDEX];
-							printf("packets_received = %d\r\n",packets_received);
+							//printf("packets_received = %d\r\n",packets_received);
 							if ((packet_data[PACKET_SEQNO_INDEX] & 0xff) != (packets_received & 0xff))
 							{
 								printf("packet_data[PACKET_SEQNO_INDEX] = %#x packets_received = %d\r\n",packet_data[PACKET_SEQNO_INDEX],packets_received);
@@ -518,12 +550,14 @@ int32_t Ymodem_Receive (uint8_t *buf)
 										/* Define the number of page to be erased */
 										NbrOfPage = FLASH_PagesMask(size);
 										printf("NbrOfPage = %d\r\n",NbrOfPage);
+
 										/* Erase the FLASH pages */
 										for (EraseCounter = 0; (EraseCounter < NbrOfPage) && (FLASHStatus == FMC_READY); EraseCounter++)
 										{
 										//	printf("fmc_page_erase\r\n");
 											FLASHStatus = fmc_page_erase(FlashDestination + (PageSize * EraseCounter));
 										}
+										
 										Send_Byte(ACK);
 										Send_Byte(CRC16);
 									}
@@ -539,7 +573,7 @@ int32_t Ymodem_Receive (uint8_t *buf)
 								/* Data packet */
 								else
 								{
-									memcpy(buf_ptr, packet_data + PACKET_HEADER, packet_length);
+									//memcpy(buf_ptr, packet_data + PACKET_HEADER, packet_length);
 									
 									if(packets_received == 1)  //可能下载的不是bin文件
 									{
@@ -552,7 +586,7 @@ int32_t Ymodem_Receive (uint8_t *buf)
 											
 											return -2;
 										}
-										else if(((*(__IO uint32_t*)(buf_ptr+4)) & 0xfFFff000 ) != ApplicationAddress)
+										else if(((*(__IO uint32_t*)(buf_ptr+4)) & 0xfFFffc00 ) != ApplicationAddress)
 										{
 											Send_Byte(CA);
 											Send_Byte(CA);
@@ -563,7 +597,8 @@ int32_t Ymodem_Receive (uint8_t *buf)
 										}
 									}
 									
-									RamSource = (uint32_t)buf;
+									RamSource = (uint32_t)buf_ptr;
+									
 									for (j = 0;(j < packet_length) && (FlashDestination <  FlashDestination_const + size);j += 4)
 									{
 										/* Program the data received into STM32F10x Flash */
@@ -579,8 +614,8 @@ int32_t Ymodem_Receive (uint8_t *buf)
 										FlashDestination += 4;
 										RamSource += 4;
 									}
-									printf("fmc_word_program packets_received = %d\r\n",packets_received);
-									Send_Byte(ACK);
+									//printf("fmc_word_program packets_received = %d\r\n",packets_received);
+									Send_Byte(ACK);									
 								}
 								
 								packets_received ++;
@@ -611,9 +646,10 @@ int32_t Ymodem_Receive (uint8_t *buf)
 						else   //从没开始下载，那就设置一个超时时间
 						{
 							time_out++;
-							if(time_out >= 120)
+							if(time_out >= 80)
 							{
 								printf("download timeout\r\n");
+								CIRC_RELEASE(g_i2c0_txbuf);  //清空IIC0发送buf
 								return 0;
 							}
 						}

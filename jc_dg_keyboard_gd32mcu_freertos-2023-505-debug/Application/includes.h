@@ -54,6 +54,17 @@ extern const char* g_build_time_str;
 //#include "keys_scan.h"
 #include "key_lights_flash.h"
 
+
+
+#define ApplicationAddress    0x8005c00
+#define PAGE_SIZE             (0x400)    /* 1 Kbyte */
+#define DOWN_MD5_OFFET  512    //下载区的md5偏移地址
+#define FILE_MD5_LENGTH 32
+
+#define UPDATE_FLAG_START_ADDR   (ApplicationAddress-PAGE_SIZE)     //设置起始地址，0x805c00
+
+
+
 //获得软件版本2023-01-15
 extern uint8_t GetMcuVersion(void);
 

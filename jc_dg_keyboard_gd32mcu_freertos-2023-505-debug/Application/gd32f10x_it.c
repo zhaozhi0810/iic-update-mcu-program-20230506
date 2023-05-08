@@ -44,13 +44,13 @@ OF SUCH DAMAGE.
 
 
 extern IIC_CircleBuffer g_i2c0_rxbuf;
-extern uint8_t g_IIC_tx_buf[7];
+//extern uint8_t g_IIC_tx_buf[36];
 extern uint8_t i2c0_send_mark;
 
 //iic0是否空闲
 volatile uint8_t g_iic0_is_Idle = 1;  //0表示非空闲，1表示空闲
 volatile uint8_t g_iic0_has_senddatas = 0;  //0表示没有，1表示有数据
-
+volatile uint8_t g_iic0_send_size = 7;  //默认是发送7个字节
 
 uint8_t num_test;
 
@@ -194,11 +194,11 @@ void I2C0_EV_IRQHandler(void)
     {
         /*收到主机读取信号，并且没有错误，则发送数据*/
         /* send a data byte */		
-		if (i < 7) //继续发送
+		if (i < g_iic0_send_size) //继续发送
 		{
 			i2c_data_transmit(I2C0, g_IIC_tx_buf[i++]);   //TBE 写入数据后，自动清零
 			//i++;
-			if (i == 7)
+			if (i == g_iic0_send_size)
 			{
 				g_IIC_tx_buf[2] = 0;
 				g_IIC_tx_buf[3] = 0;
@@ -208,8 +208,12 @@ void I2C0_EV_IRQHandler(void)
 				g_iic0_is_Idle = 1;  //0表示非空闲，1表示空闲
 				vTaskNotifyGiveFromISR(TaskHandle_IIC0_SendData,NULL);  //唤醒发送数据任务
 				i = 0;
+				if(g_iic0_send_size > 7)
+					g_iic0_send_size = 7;
 			}
 		}
+		else
+			i2c_data_transmit(I2C0, 0);
 		
     }
     else if (i2c_interrupt_flag_get(I2C0, I2C_INT_FLAG_STPDET))

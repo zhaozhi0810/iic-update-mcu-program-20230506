@@ -251,7 +251,7 @@ int main(void)
 	{
 		Main_Menu ();
 	}
-	else if(((*(__IO uint32_t*)(ApplicationAddress+4)) & 0xfFFff000 ) != ApplicationAddress)
+	else if(((*(__IO uint32_t*)(ApplicationAddress+4)) & 0xfFFffc00 ) != ApplicationAddress)
 	{
 		Main_Menu ();
 	}
