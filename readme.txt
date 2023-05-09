@@ -29,12 +29,19 @@
 
 
 
+四、2023-05-08，2
+1.iap增加md5的计算，下载后计算一次md5，核对是否一致，一致则更新，不一致则不更新，需要重新下载。
 
 
 
-
-
-
+五、2023-05-09
+1.完成合并文件输出，在jc_dg_keyboard_gd32mcu_freertos-2023-505-debug\output目录中gd32f103-iap_jc_dg_keyboard_gd32.bin文件
+这个文件用于出厂烧录到单片机
+2.在jc_dg_keyboard_gd32mcu_freertos-2023-505-debug\temp目录中
+  jc_dg_keyboard_gd32.bin 和 jc_dg_keyboard_gd32.md5 会同步生成，用于在rk3399中升级单片机程序。
+3.本次包含combin的源码，该命令需要三个参数，iap文件，app文件，输出文件名。建议文件名不要超过32字节。
+4.调试串口下载时，单片机自己计算md5值，并且保存到flash中。
+5.单片机的app版本升到5，调试串口可以打印出md5值
 
 
 

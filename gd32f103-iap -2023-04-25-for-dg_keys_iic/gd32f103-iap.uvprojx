@@ -81,9 +81,9 @@
           </BeforeMake>
           <AfterMake>
             <RunUserProg1>1</RunUserProg1>
-            <RunUserProg2>0</RunUserProg2>
+            <RunUserProg2>1</RunUserProg2>
             <UserProg1Name>fromelf --bin -o ./output/@L.bin ./Objects/@L.axf</UserProg1Name>
-            <UserProg2Name></UserProg2Name>
+            <UserProg2Name>cmd.exe /C copy output\@L.bin ..\jc_dg_keyboard_gd32mcu_freertos-2023-505-debug\temp\</UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
             <nStopA1X>0</nStopA1X>

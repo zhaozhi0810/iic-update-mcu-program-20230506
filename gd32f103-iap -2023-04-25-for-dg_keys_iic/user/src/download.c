@@ -33,6 +33,8 @@ extern uint8_t file_name[FILE_NAME_LENGTH];
 //uint8_t tab_1024[1024] ={0};
 uint8_t md5sum_down[34] ={0};  //存放md5值
 int32_t Size = 0;   //存放固件大小，下载的值
+extern uint8_t is_cpu_update_cmd;   //是rk3399的升级吗？ 非0表示从rk3399下载
+
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -59,9 +61,12 @@ uint8_t SerialDownload(void)
 		SerialPutString("\n\r Size: ");
 		SerialPutString(Number);
 		SerialPutString(" Bytes\r\n");
-		SerialPutString("md5sum : ");
-		SerialPutString(md5sum_down);
-		SerialPutString(" \r\n");
+		if(is_cpu_update_cmd)  //rk3399下载才有md5码
+		{
+			SerialPutString("md5sum : ");
+			SerialPutString(md5sum_down);
+			SerialPutString(" \r\n");
+		}
 		SerialPutString("-------------------\n");
 		return 0;
 	}

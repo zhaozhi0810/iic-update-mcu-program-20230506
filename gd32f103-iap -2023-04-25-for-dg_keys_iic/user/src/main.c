@@ -103,18 +103,18 @@ void Led_Show_Work_ToggleOut(void)
 }
 
 
-static void OePins_Control_Init(void)
-{
-	//1. 时钟使能
-	rcu_periph_clock_enable(RCU_GPIOC);
-		
-	//2.0 上电控制引脚
-	gpio_init(GPIOC, GPIO_MODE_OUT_PP, GPIO_OSPEED_2MHZ, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3);  //控制输出	
-	//2. 初始化后，默认输出高
-	gpio_bit_reset(GPIOC, GPIO_PIN_2);  //OE3 输出低
-	
-	gpio_bit_set(GPIOC, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3);  //其他 输出高
-}
+//static void OePins_Control_Init(void)
+//{
+//	//1. 时钟使能
+//	rcu_periph_clock_enable(RCU_GPIOC);
+//		
+//	//2.0 上电控制引脚
+//	gpio_init(GPIOC, GPIO_MODE_OUT_PP, GPIO_OSPEED_2MHZ, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3);  //控制输出	
+//	//2. 初始化后，默认输出高
+//	gpio_bit_reset(GPIOC, GPIO_PIN_2);  //OE3 输出低
+//	
+//	gpio_bit_set(GPIOC, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_3);  //其他 输出高
+//}
 
 
 
@@ -176,7 +176,7 @@ int main(void)
 	
 	SystickConfig();
 	
-	OePins_Control_Init();    //OE引脚的初始化，允许串口输出
+//	OePins_Control_Init();    //OE引脚的初始化，允许串口输出
 	
 	//串口初始化
 	IAP_Init(USART0);   //调试串口
@@ -188,7 +188,7 @@ int main(void)
 	fmc_unlock();
 	
 	
-	SerialPutString("\r\niap start(by dazhi@jc), init ok!!\r\n");
+	SerialPutString("\r\nIAP 2023 start(by dazhi@jc), init ok!!\r\n");
 	SerialPutString((char*)g_build_time_str);   //此时还没有打印任务，不要打印太多数据
 	SerialPutString("\r\n");
 

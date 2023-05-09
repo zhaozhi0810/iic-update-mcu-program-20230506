@@ -26,7 +26,7 @@ uint32_t JumpAddress;
 uint32_t BlockNbr = 0, UserMemoryMask = 0;
 __IO uint32_t FlashProtection = 0;
 extern uint32_t FlashDestination;
-extern uint8_t is_cpu_update_cmd;   //是rk3399的升级吗？ 非0表示从rk3399下载
+
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
@@ -382,14 +382,15 @@ void uart0_print_help(void)
 	}
 	
 	SerialPutString("\r\n================== Main Menu ============================\r\n");
-	SerialPutString("1.  Download Image To the GD32F10x Internal Flash\r\n");
-	SerialPutString("2.  Upload Image From the GD32F10x Internal Flash (debug  uart0)\r\n");
-	SerialPutString("3.  Download Image To the GD32F10x Internal Flash from rk3399 uart\r\n");
-	SerialPutString("4.  Reboot the system , Run APP \r\n");
+	SerialPutString("1.  Download Image To the GD32F10x Internal Flash (debug  uart0)\r\n");
+	SerialPutString("2.  Reboot the system , Run APP \r\n");	
+//	SerialPutString("8.  Download Image To the GD32F10x Internal Flash (from rk3399 iic)\r\n");	
+	
+	//SerialPutString("9.  Upload Image From the GD32F10x Internal Flash (debug  uart0)\r\n");
 
 	if(FlashProtection != 0)
 	{
-	SerialPutString("5.  Disable the write protection\r\n");
+		SerialPutString("3.  Disable the write protection\r\n");
 	}
 
 	SerialPutString("==========================================================\r\n");
@@ -403,23 +404,31 @@ void get_cmd_from_debug_uart0(void)
 	
 	if(SerialKeyPressed_Uart0((uint8_t*)&key))
 	{
-		if (key == 0x31)
+		if (key == '1')
 		{
 			set_download_uart(0);
+			is_cpu_update_cmd = 0; //从调试串口下载
 			/* Download user application in the Flash */
-			SerialDownload();
+			if(0==SerialDownload())
+			{
+				printf("\rdebug uart update done!\r\n");
+				mcu_download_done();
+				mcu_update_done();
+				NVIC_SystemReset();
+			}
 		}
-		else if (key == 0x32)
+		else if (key == '9')   //改为隐藏功能，数字9,这个功能没有测试过！！！！
 		{
 			set_download_uart(0);
+			is_cpu_update_cmd = 0; //从调试串口下载
 			/* Upload user application from the Flash */
 			SerialUpload();
 		}
-		else if (key == 0x33)
+		else if (key == '8')  //改为隐藏功能，数字8
 		{
 			goto_ota_update();   //重启进入rk3399下载模式
 		}
-		else if (key == 0x34)
+		else if (key == '2')
 		{
 			NVIC_SystemReset();    //2023-02-02  改为重启了
 //			JumpAddress = *(__IO uint32_t*) (ApplicationAddress + 4);
@@ -430,7 +439,7 @@ void get_cmd_from_debug_uart0(void)
 //			__set_MSP(*(__IO uint32_t*) ApplicationAddress);
 //			Jump_To_Application();
 		}
-		else if ((key == 0x35) && (FlashProtection == 1))
+		else if ((key == '3') && (FlashProtection == 1))
 		{
 			/* Disable the write protection of desired pages */
 			FLASH_DisableWriteProtectionPages();
@@ -438,14 +447,6 @@ void get_cmd_from_debug_uart0(void)
 		else
 		{
 			uart0_print_help();
-//			if (FlashProtection == 0)
-//			{
-//				SerialPutString("Invalid Number ! ==> The number should be either 1, 2 or 3\r");
-//			}
-//			else
-//			{
-//				SerialPutString("Invalid Number ! ==> The number should be either 1, 2, 3 or 4\r");
-//			} 
 		}
 	}
 }

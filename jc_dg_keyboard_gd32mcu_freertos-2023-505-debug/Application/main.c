@@ -812,7 +812,7 @@ void task3_func(void *pdata)
                 fill_tx_data(0x50, 0x00, 0x00, 0x5A);
                 break;
             case CMD_LIGHT_LED:
-				printf("cmd_type = %d,cmd = %d\r\n",cmd_type,cmd);
+			//	printf("cmd_type = %d,cmd = %d\r\n",cmd_type,cmd);
 				task_notity_val = CMD_LIGHT_LED | (cmd<<8);
 				xTaskNotify(TaskHandle_Light_Control,task_notity_val,eSetValueWithOverwrite);
 			
@@ -849,7 +849,7 @@ void task3_func(void *pdata)
             default:
 				if((cmd_type & 0xfc) == CMD_LIGHT_FLASH)  //处理0x80,0x81,0x82,0x83
 				{
-					printf("cmd_type = %d,cmd = %d\r\n",cmd_type,cmd);
+				//	printf("cmd_type = %d,cmd = %d\r\n",cmd_type,cmd);
 					flash_time = cmd_type &0x3;   //闪烁频率
 					light_leds_add_flash(cmd, flash_time);
 					

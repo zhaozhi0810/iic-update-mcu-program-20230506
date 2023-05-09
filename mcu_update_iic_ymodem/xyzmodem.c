@@ -350,6 +350,7 @@ uint8_t Ymodem_Transmit (uint8_t *buf, const uint8_t* sendFileName, uint32_t siz
 		}
   
 		/* µÈ´ý Ack ºÍ×Ö·û 'C' */
+		usleep(300000);  //延时一下600ms，2023-0508
 		if (UART_ReceivePacket(&receivedC[0], 2, 10000) == 0)  
 		{
 			if ((receivedC[0] == ACK)&&(receivedC[1] == CRC16))
@@ -833,15 +834,21 @@ int xymodem_send(const char *filename)
 	}
 
 	//读取缓存中的所有数据
-	// do
-	// {
-	// 	ret = UART_ReceiveByte (data, 500);  //
-	// 	if(!ret && data[0] == 0x43)
-	// 		recv_0x43 = 1;
-	// 	printf("dat[o] = %d\n",data[0]);
-	// 	if(data[0] == 0)
-	// 		break;;
-	// }while(ret == 0);
+	do
+	{
+		ret = UART_ReceiveByte (data, 500);  //
+		if(!ret)
+		{
+			if(data[0] == 0x43)
+				recv_0x43 = 1;
+			else //读到了数据，但不是0x43，也是直接退出
+				break;
+		}
+		// else
+		// {
+		// 	break;   //没有读到数据，直接退出
+		// }			
+	}while(ret == 0);
 
 	if(!recv_0x43)  //没有收到数据，或者收到的不是0x43
 	{

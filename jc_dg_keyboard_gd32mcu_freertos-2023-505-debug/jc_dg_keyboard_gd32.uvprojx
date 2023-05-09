@@ -81,9 +81,9 @@
           </BeforeMake>
           <AfterMake>
             <RunUserProg1>1</RunUserProg1>
-            <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name>fromelf --bin -o ./output/@L.bin ./Objects/@L.axf</UserProg1Name>
-            <UserProg2Name></UserProg2Name>
+            <RunUserProg2>1</RunUserProg2>
+            <UserProg1Name>fromelf --bin -o ./temp/@L.bin ./Objects/@L.axf</UserProg1Name>
+            <UserProg2Name>tools/combin temp/gd32f103-iap.bin temp/jc_dg_keyboard_gd32.bin output/gd32f103-iap_jc_dg_keyboard_gd32.bin</UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
             <nStopA1X>0</nStopA1X>

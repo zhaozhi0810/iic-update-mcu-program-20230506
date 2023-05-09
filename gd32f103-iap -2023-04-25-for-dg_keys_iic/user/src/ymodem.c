@@ -508,31 +508,33 @@ int32_t Ymodem_Receive (void)  //uint8_t *buf
 										
 										file_ptr ++;
 										
-										
-										for (i = 0, file_ptr ++; (i < FILE_MD5_LENGTH);i++) //(*file_ptr != '\0') &&&& (*(pdown_md5+i) != '\0') 
+										if(is_cpu_update_cmd)  //rk3399下载才有md5码
 										{
-											md5sum_down[i] = *(file_ptr+i);
-											//printf("*(pdown_md5+i) = %#x,*(file_ptr+i)=%#x,i=%d\r\n",*(pdown_md5+i),*(file_ptr+i),i);
-											if(*(pdown_md5+i) != *(file_ptr+i))
+											for (i = 0, file_ptr ++; (i < FILE_MD5_LENGTH);i++) //(*file_ptr != '\0') &&&& (*(pdown_md5+i) != '\0') 
 											{
-												md5_same = 1;  //md5不同，可以升级
-											//	break;
+												md5sum_down[i] = *(file_ptr+i);
+												//printf("*(pdown_md5+i) = %#x,*(file_ptr+i)=%#x,i=%d\r\n",*(pdown_md5+i),*(file_ptr+i),i);
+												if(*(pdown_md5+i) != *(file_ptr+i))
+												{
+													md5_same = 1;  //md5不同，可以升级
+												//	break;
+												}
+											//	j++;
 											}
-										//	j++;
-										}
-										md5sum_down[i] = '\0';
-										printf("md5sum_down = %s\r\n",md5sum_down);
-										//printf("j=%d\r\n",j);
-										if(!md5_same) //md5一致，不升级
-										{										
-											/* End session */
-											Send_Byte(CA);
-											Send_Byte(CA);
-										//	printf("md5 is the same, md5 = %s i = %d\r\n",file_ptr,i);											
-										//	printf("md5sum_down = %s\r\n",md5sum_down);
-										//	printf("pdown_md5 addr = %p\r\n",pdown_md5);
-										//	printf("pdown_md5 = %s\r\n",pdown_md5);
-											return -4;
+											md5sum_down[i] = '\0';
+											printf("md5sum_down = %s\r\n",md5sum_down);
+											//printf("j=%d\r\n",j);
+											if(!md5_same) //md5一致，不升级
+											{										
+												/* End session */
+												Send_Byte(CA);
+												Send_Byte(CA);
+											//	printf("md5 is the same, md5 = %s i = %d\r\n",file_ptr,i);											
+											//	printf("md5sum_down = %s\r\n",md5sum_down);
+											//	printf("pdown_md5 addr = %p\r\n",pdown_md5);
+											//	printf("pdown_md5 = %s\r\n",pdown_md5);
+												return -4;
+											}
 										}
 										//md5sum_down[i] = '\0';
 										/* Test the size of the image to be sent */

@@ -54,6 +54,21 @@ static void  Com_Debug_Print_Help(void)
 }
 
 
+static void print_md5sum(void)
+{
+	char buf[36] = {0};
+	int i;
+	uint8_t *pdown_md5 = (void*)(UPDATE_FLAG_START_ADDR + DOWN_MD5_OFFET);
+	
+	for(i=0;i<32;i++)
+	{
+		buf[i] = pdown_md5[i];
+	}
+	
+	printf("md5: %s\r\n",buf);
+}
+
+
 
 
 //这个函数用来处理调试串口接收到的简单的调试命令
@@ -71,6 +86,7 @@ static void Com_Debug_Message_Handle1(uint8_t buf)
 			printf("%s\r\n",(char*)g_build_time_str);  //打印编译的时间
 			printf("Author:JC&DaZhi <vx:285408136>\r\n"); 
 			printf("Version : %02d\r\n",SOFT_VERSION); 
+			print_md5sum();
 		break;
 		case '1':
 			printf("AT9236_LED_lightAll\r\n");  //lcd加电状态

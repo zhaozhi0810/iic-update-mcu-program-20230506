@@ -2,7 +2,7 @@
 * @Author: dazhi
 * @Date:   2023-05-05 16:22:34
 * @Last Modified by:   dazhi
-* @Last Modified time: 2023-05-06 17:02:05
+* @Last Modified time: 2023-05-08 15:50:58
 */
 
  
@@ -128,6 +128,7 @@ static int i2c_read(u8 slave_addr, uint8_t data[],uint8_t len) {
 int IIC3_0x40_ReceiveByte (uint8_t *c, uint32_t timeout)
 {
     int ret;
+    usleep(100000);   //延时一下，2023-0508
     do
     {
         ret = i2c_read(MCU_IIC_SLAVER_ADDR, c, 1); 
@@ -153,6 +154,7 @@ int IIC3_0x40_ReceivePacket (uint8_t *data, uint16_t length, uint32_t timeout)
 {
     int ret;
     int i = 0;
+    usleep(50000);  //延时一下100ms，2023-0508
     do
     {
         ret = i2c_read(MCU_IIC_SLAVER_ADDR, data,length); 

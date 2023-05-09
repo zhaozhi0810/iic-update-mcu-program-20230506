@@ -107,6 +107,9 @@ void SerialUpload(void);
 //从下载端口获得字符
 uint8_t Uploader_Get_Ready(void);
 
+
+
+extern uint8_t is_cpu_update_cmd;   //是rk3399的升级吗？ 非0表示从rk3399下载
 #endif  /* _COMMON_H */
 
 /*******************(C)COPYRIGHT 2010 STMicroelectronics *****END OF FILE******/
