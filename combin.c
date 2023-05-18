@@ -2,7 +2,7 @@
 * @Author: dazhi
 * @Date:   2023-05-09 09:30:03
 * @Last Modified by:   dazhi
-* @Last Modified time: 2023-05-09 15:52:49
+* @Last Modified time: 2023-05-18 09:02:29
 *
 * 如果使用md5sum的命令，则在windows下编译时，无法计算md值
 * 下载mingw64：
@@ -256,12 +256,14 @@ void combin_file(char* file1,char* file2,char* outfilename)
     int bw = 0;       
     int readcount = 0;
     int ret,i;
+    int lcd_inch = 0;
 
     if(file1== NULL || file2 == NULL)
     {
     	printf("ERROR : file is NULL \n");
     	return ;
     }
+
 
     //形成输出文件名
     if(outfilename == NULL)
@@ -294,6 +296,9 @@ void combin_file(char* file1,char* file2,char* outfilename)
     	}
     }	
     printf("outnamebuf = %s\n",outnamebuf);
+
+
+
 
     get_file_md5sum(file2);
 
@@ -464,12 +469,33 @@ void combin_file(char* file1,char* file2,char* outfilename)
 
     //加入文件大小，md5值
     posision -= 0x400;   //退1k字节
-    printf("posision2 = %#x\n",posision);
+    printf("posion2 = %#x\n",posision);
     (*(uint32_t*)(buf+4+posision)) = size2;  //只保存app 的bin文件大小
     (*(uint16_t*)(buf+posision)) = 0xff;     //不需要升级
 
+
+    if(strstr(file2,"old5") != NULL)
+    {
+    //    lcd_inch = 4;  
+        (*(uint8_t*)(buf+posision-1)) = 5;
+        printf("detect old5inch\n"); 
+    }
+    else if(strstr(file2,"7inch") != NULL)
+    {
+    //     lcd_inch = 5;  
+         (*(uint8_t*)(buf+posision-1)) = 4; 
+         printf("detect 7inch\n"); 
+    }
+    else if(strstr(file2,"new5") != NULL)
+    {
+    //    lcd_inch = 6;
+        (*(uint8_t*)(buf+posision-1)) = 6; 
+        printf("detect new5inch\n"); 
+    }
+
+
     posision += 512;   //写入md5的值。
-    printf("posision3 = %#x\n",posision);
+    printf("posion3 = %#x\n",posision);
     for(i=0;i<32;i++)
     {
     	buf[i+posision] = md5_readBuf[i];
@@ -492,6 +518,9 @@ void combin_file(char* file1,char* file2,char* outfilename)
         return ;
     }
 
+
+
+
     //写入文件
     readcount = 0;
 	do
@@ -504,10 +533,10 @@ void combin_file(char* file1,char* file2,char* outfilename)
     free(buf);
 
     //生成md5文件
-    size2 = strlen(file2) -3;
+    size2 = strlen(outfilename) -3;
     if(size2 > 60)
         size2 = 60;  //防止数组越界
-    strncpy(outnamebuf,file2,size2); //不需要后缀
+    strncpy(outnamebuf,outfilename,size2); //不需要后缀
     outnamebuf[size2] = '\0';
     strcat(outnamebuf,"md5");
     fin1 = fopen(outnamebuf, "wb");
